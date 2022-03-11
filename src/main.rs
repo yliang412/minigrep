@@ -1,20 +1,20 @@
 use std::{env, process};
 
 use minigrep::Config;
+use colored::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let config = Config::new(&args).unwrap_or_else(|err| {
-        println!("Problem parsing arguments: {}", err);
-        println!("Usage: minigrep <search string> <filename>");
+        eprintln!("Problem parsing arguments: {}", err.red().bold());
+        eprintln!("Usage: [CASE_INSENSITIVE=1] minigrep <search string> <filename>");
         process::exit(1);
     });
 
-    println!("Searching for {}", config.query_str);
-    println!("In file {}", config.path);
+    eprintln!("Searching for `{}` in file `{}`", config.query_str.green().bold(), config.path.green().bold());
 
     if let Err(e) = minigrep::run_main(config) {
-        println!("Application error: {}", e);
+        eprintln!("Application error: {}", e.to_string().red().bold());
 
         process::exit(1);
     }
