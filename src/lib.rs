@@ -7,15 +7,18 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        } else if args.len() > 3 {
-			return Err("too many arguments");
-		}
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+        args.next();
 
-        let query_str = args[1].clone();
-        let path = args[2].clone();
+        let query_str = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name"),
+        };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
@@ -43,15 +46,10 @@ pub fn run_main(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn search<'a>(query_str: &str, content: &'a str) -> Vec<&'a str> {
-    let mut res = Vec::new();
-
-    for line in content.lines() {
-        if line.contains(query_str) {
-            res.push(line);
-        }
-    }
-
-    res
+    content
+        .lines()
+        .filter(|line| line.contains(query_str))
+        .collect()
 }
 
 pub fn search_case_insensitive<'a>(query_str: &'a str, content: &'a str) -> Vec<&'a str> {
